@@ -1,5 +1,5 @@
 {
-  "name": "orchard/orchard",
+  "name": "williamug/orchard",
   "description": "Orchard is a lightweight PHP CLI tool for safe, centralized bulk dependency maintenance across multiple Laravel projects.",
   "type": "project",
   "license": "MIT",

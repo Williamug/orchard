@@ -1,147 +1,147 @@
 # 🍃 Orchard
 
-**Orchard** is a lightweight PHP CLI tool for safe, centralized bulk dependency maintenance across multiple Laravel projects.
+**Orchard** is a lightweight, high-performance PHP CLI tool designed for safe, centralized bulk dependency maintenance across multiple Laravel projects.
 
-## Features
+Whether you manage a handful of sites or a massive fleet of Laravel applications, Orchard provides a unified interface to scan, audit, and update them all without ever risking your data.
 
-- **Scan** — Automatically detect all Laravel projects in a directory
-- **Status** — Inspect Laravel/PHP/Git/Composer status per project
-- **Update** — Run `composer update` safely with Git clean enforcement
-- **Git Guard** — Skips dirty repositories — never risks data loss
-- **Parallel execution** — Process multiple projects concurrently
-- **JSON output** — CI-friendly structured reporting
+---
 
-## Requirements
+## Key Features
 
-- PHP 8.2+
-- Composer
-- Git
+*   **Smart Probing** — Instantly scan directories (flat or recursive) to discover Laravel projects.
+*   **Unified Status** — Get a high-level table view of Laravel versions, PHP constraints, Git status, and Composer versions across your entire fleet.
+*   **Outdated Reporting** — Aggregate `composer outdated` results from every project into a single, scanable report.
+*   **Git Guard** — Built-in safety enforcement. Orchard **refuses** to update any project with uncommitted git changes, ensuring you never lose local work.
+*   **Auto-Branching** — Automatically create dated Git branches (e.g., `chore/orchard-update-2026-02-19`) before running updates, following best-practice deployment workflows.
+*   **Parallel Processing** — High-speed concurrent updates powered by Symfony Process, with smart CPU-aware throttling.
+*   **CI/CD Ready** — Every command supports a `--json` flag for easy integration with automation scripts and monitoring dashboards.
+
+---
 
 ## Installation
 
+### From Source
 ```bash
 git clone https://github.com/your-org/orchard.git
 cd orchard
-composer install
+composer install --no-dev
 chmod +x bin/orchard
 ```
 
-## Usage
-
-### Scan for Laravel projects
+### Build as PHAR (Recommended for Global Use)
+Building Orchard as a PHAR makes it portable and easy to use globally.
 ```bash
-php bin/orchard scan
-php bin/orchard scan --path=/home/user/projects
-php bin/orchard scan --path=/home/user/projects --recursive
-php bin/orchard scan --json
+# Build the PHAR
+php vendor/bin/box compile
+
+# Move to your global bin
+mv dist/orchard.phar /usr/local/bin/orchard
+chmod +x /usr/local/bin/orchard
 ```
 
-### Inspect status
+---
+
+## Usage Guide
+
+### 1. Finding Projects (`scan`)
+Use `scan` to verify which projects Orchard detects in a given directory.
 ```bash
-php bin/orchard status
-php bin/orchard status --path=/home/user/projects
-php bin/orchard status --json
+# Scan current directory
+orchard scan
+
+# Scan a specific path recursively
+orchard scan --path=/var/www --recursive
+
+# Output results as JSON
+orchard scan --json
 ```
 
-### Bulk update
+### 2. Auditing Health (`status`)
+The `status` command provides a bird's-eye view of your project versions and Git hygiene.
 ```bash
-php bin/orchard update
-php bin/orchard update --path=/home/user/projects
-php bin/orchard update --exclude=legacy-app,old-site
-php bin/orchard update --parallel=4
-php bin/orchard update --dry-run
-php bin/orchard update --json
+orchard status
+
+# Check a specific path
+orchard status -p /sites
 ```
+
+### 3. Checking for Updates (`outdated`)
+Running `outdated` aggregates all direct dependency updates available across your projects.
+```bash
+orchard outdated
+
+# Great for checking specialized project clusters
+orchard outdated --path=~/sites/client-a --exclude=legacy-cms
+```
+
+### 4. Bulk Maintenance (`update`)
+The core of Orchard. Safely run `composer update` across your fleet.
+```bash
+# Update all clean projects in parallel
+orchard update --parallel=4
+
+# The "Safety First" Workflow: Dry run + Auto-branch
+orchard update --auto-branch --dry-run
+
+# Full Automation with specific branch prefix
+orchard update --auto-branch --branch-prefix=security-fix --parallel=2
+```
+
+---
 
 ## Configuration
 
-Create `~/.orchard.json` to set persistent defaults:
+Set persistent defaults by creating a `~/.orchard.json` file. This is ideal for excluding legacy projects or setting your default projects path.
 
 ```json
 {
-  "base_path": "/home/user/projects",
-  "parallel": 2,
-  "recursive": false,
-  "exclude": ["legacy-app"]
+  "base_path": "/home/user/sites",
+  "parallel": 4,
+  "recursive": true,
+  "exclude": ["abandoned-project", "experimental-v3"],
+  "auto_branch": false,
+  "branch_prefix": "chore/deps-update",
+  "timeout": 300
 }
 ```
 
-**Priority order:** CLI flags → `~/.orchard.json` → Internal defaults
+**Resolution Priority:**
+1.  Explicit CLI Flags (e.g., `--parallel=10`)
+2.  `~/.orchard.json` values
+3.  Internal Defaults (1 process, current directory)
+
+---
+
+## The Orchard Safety Pledge
+
+Orchard is built for developers who care about stability. We follow strict safety rules:
+
+1.  **Strict Git Isolation**: If `git status` shows uncommitted changes, Orchard skips the project. No exceptions.
+2.  **No Constraint Tampering**: Orchard runs `composer update`. It **never** touches your `composer.json` version ranges.
+3.  **No Ghost Commits**: Orchard creates branches (if enabled) but **never** performs `git commit` or `git push`. You remain in control of the final merge.
+4.  **Error Isolation**: A crash or failure in one project is isolated. Orchard continues with the rest and provides a summary report at the end.
+
+---
 
 ## Exit Codes
 
 | Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | At least one project failed |
-| 2 | Configuration or system error |
+| :--- | :--- |
+| `0` | **Success** — All projects updated or skipped safely. |
+| `1` | **Warning** — One or more project updates failed. |
+| `2` | **Error** — Invalid configuration or system environment issues. |
 
-## Safety Guarantees
+---
 
-- **Never** updates a project with uncommitted git changes
-- **Never** modifies `composer.json` version constraints
-- **Never** auto-commits or auto-pushes
-- **Never** silently destroys data
-- Failures in one project do **not** stop other projects
+## Development & Testing
 
-## Output Example
-
-```
-🍃 Orchard – updating 3 project(s)
-
-  ✔ api-service [3.2s]
-  ⚠ legacy-app (DIRTY_GIT)
-  ✖ old-portal (Composer exited with non-zero code)
-
-🍃 Orchard Summary
--------------------
-✔ 1 updated
-⚠ 1 skipped
-✖ 1 failed
-Total time: 3s
-```
-
-## Building a PHAR
-
-```bash
-composer install --no-dev
-php vendor/bin/box compile
-# Output: dist/orchard.phar
-chmod +x dist/orchard.phar
-./dist/orchard.phar scan
-```
-
-## Running Tests
-
+We maintain a 100% pass rate on our test suite. To contribute:
 ```bash
 composer install
 ./vendor/bin/phpunit --testdox
 ```
 
-## Architecture
-
-```
-src/
-├── Application.php          # Bootstrap, config loading, DI wiring
-├── Command/                 # Thin CLI handlers (delegate to services)
-│   ├── ScanCommand.php
-│   ├── StatusCommand.php
-│   └── UpdateCommand.php
-├── Service/                 # All business logic
-│   ├── LaravelDetector.php
-│   ├── ProjectScanner.php
-│   ├── GitGuard.php
-│   ├── ComposerRunner.php
-│   ├── UpdateOrchestrator.php
-│   └── Reporter.php
-├── DTO/                     # Immutable typed value objects
-│   ├── Project.php
-│   ├── UpdateResult.php
-│   └── StatusResult.php
-└── Exception/
-    └── OrchardException.php
-```
+---
 
 ## License
-
-MIT
+MIT License. Created by the Orchard Contributors.
