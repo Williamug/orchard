@@ -1,0 +1,16 @@
+{
+  "output": "dist/orchard.phar",
+  "main": "bin/orchard",
+  "chmod": "0755",
+  "compression": "GZ",
+  "finder": [
+    {
+      "in": "src"
+    }
+  ],
+  "directories": [
+    "config"
+  ],
+  "exclude-composer-files": false,
+  "exclude-dev-files": true
+}
