@@ -1,0 +1,39 @@
+{
+  "name": "orchard/orchard",
+  "description": "Orchard is a lightweight PHP CLI tool for safe, centralized bulk dependency maintenance across multiple Laravel projects.",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "symfony/console": "^7.0",
+    "symfony/finder": "^7.0",
+    "symfony/process": "^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0",
+    "humbug/box": "^4.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Orchard\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Orchard\\Tests\\": "tests/"
+    }
+  },
+  "bin": [
+    "bin/orchard"
+  ],
+  "scripts": {
+    "test": "phpunit",
+    "build": "php vendor/bin/box compile"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
