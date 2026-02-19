@@ -6,6 +6,7 @@ namespace Orchard;
 
 use Orchard\Command\OutdatedCommand;
 use Orchard\Command\ScanCommand;
+use Orchard\Command\SelfUpdateCommand;
 use Orchard\Command\StatusCommand;
 use Orchard\Command\UpdateCommand;
 use Orchard\Service\ComposerRunner;
@@ -43,6 +44,7 @@ class Application extends SymfonyApplication
         $this->add(new StatusCommand($scanner, $composer, $reporter, $config));
         $this->add(new UpdateCommand($scanner, $orchestrator, $reporter, $config));
         $this->add(new OutdatedCommand($scanner, $outdated, $reporter, $config));
+        $this->add(new SelfUpdateCommand());
     }
 
     /**
