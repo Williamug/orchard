@@ -21,7 +21,7 @@ use Symfony\Component\Console\Application as SymfonyApplication;
 
 class Application extends SymfonyApplication
 {
-    private const VERSION = '1.0.0';
+    private const VERSION = '1.0.1';
 
     public function __construct()
     {
