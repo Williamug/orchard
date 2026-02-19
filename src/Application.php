@@ -54,7 +54,12 @@ class Application extends SymfonyApplication
     {
         $defaults = require __DIR__ . '/../config/default.php';
 
-        $userConfigPath = ($_SERVER['HOME'] ?? getenv('HOME') ?: '~') . '/.orchard.json';
+        $home = $_SERVER['HOME'] ?? getenv('HOME');
+        if (!$home && getenv('USERPROFILE')) {
+            $home = getenv('USERPROFILE');
+        }
+
+        $userConfigPath = ($home ?: '~') . '/.orchard.json';
 
         if (!file_exists($userConfigPath)) {
             return $defaults;
