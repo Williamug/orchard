@@ -48,9 +48,13 @@ class UpdateOrchestrator
 
     public function getMaxParallel(): int
     {
-        $cpuCores = (int) shell_exec('nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4');
+        if (PHP_OS_FAMILY === 'Windows') {
+            $cpuCores = (int) getenv('NUMBER_OF_PROCESSORS');
+        } else {
+            $cpuCores = (int) shell_exec('nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null');
+        }
 
-        return max(1, $cpuCores * 2);
+        return max(1, ($cpuCores ?: 4) * 2);
     }
 
     /**
