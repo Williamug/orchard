@@ -13,6 +13,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 
 #[AsCommand(
     name: 'update',
@@ -38,6 +39,7 @@ class UpdateCommand extends Command
             ->addOption('exclude', null, InputOption::VALUE_REQUIRED, 'Comma-separated list of project names to exclude')
             ->addOption('auto-branch', null, InputOption::VALUE_NONE, 'Create a git branch before updating')
             ->addOption('branch-prefix', null, InputOption::VALUE_REQUIRED, 'Prefix for auto-created branches')
+            ->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Select projects interactively')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Simulate updates without running composer')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Output as JSON');
     }
@@ -61,6 +63,14 @@ class UpdateCommand extends Command
                     $output->writeln('<comment>No Laravel projects found in: ' . $basePath . '</comment>');
                 }
                 return Command::SUCCESS;
+            }
+
+            if ((bool) $input->getOption('interactive') && !$json) {
+                $projects = $this->promptForProjects($input, $output, $projects);
+                if (empty($projects)) {
+                    $output->writeln('<comment>No projects selected. Aborting.</comment>');
+                    return Command::SUCCESS;
+                }
             }
 
             if (!$json) {
@@ -166,5 +176,37 @@ class UpdateCommand extends Command
         }
 
         return null;
+    }
+
+    /**
+     * @param list<\Orchard\DTO\Project> $projects
+     * @return list<\Orchard\DTO\Project>
+     */
+    private function promptForProjects(InputInterface $input, OutputInterface $output, array $projects): array
+    {
+        $choices = [];
+        foreach ($projects as $index => $project) {
+            $choices[$project->name] = $project->name . ' <comment>(' . $project->path . ')</comment>';
+        }
+
+        $question = new ChoiceQuestion(
+            'Select projects to update (comma separated names, or indices):',
+            array_values($choices)
+        );
+        $question->setMultiselect(true);
+
+        $helper   = $this->getHelper('question');
+        $selected = $helper->ask($input, $output, $question);
+
+        // Map back to Project DTOs
+        $selectedNames = [];
+        foreach ($selected as $choice) {
+            // Choice is the value from the array, e.g. "my-project <comment>(/path)</comment>"
+            // ChoiceQuestion returns the string if we pass indexed array, or key if we pass associative.
+            // Let's use name directly by using names as choices.
+            $selectedNames[] = explode(' ', $choice)[0];
+        }
+
+        return array_values(array_filter($projects, fn($p) => in_array($p->name, $selectedNames, true)));
     }
 }
