@@ -49,7 +49,10 @@ Building Orchard as a PHAR (PHP Archive) makes it a single portable executable t
    ```
    *This generates `dist/orchard.phar`.*
 
-2. **Make it Global**: Move the generated file to a directory in your system's PATH and make it executable.
+2. **Make it Global**:
+
+   **Unix (Linux/macOS)**:
+   Move the generated file to a directory in your system's PATH and make it executable.
    ```bash
    # Move to global bin
    sudo mv dist/orchard.phar /usr/local/bin/orchard
@@ -57,6 +60,14 @@ Building Orchard as a PHAR (PHP Archive) makes it a single portable executable t
    # Ensure it is executable
    sudo chmod +x /usr/local/bin/orchard
    ```
+
+   **Windows**:
+   1. Create a directory for your CLI tools (e.g., `C:\bin`) and move `dist/orchard.phar` there.
+   2. Create a file named `orchard.bat` in that same directory with the following content:
+      ```batch
+      @php "%~dp0orchard.phar" %*
+      ```
+   3. Add `C:\bin` to your system's **Environment Variables** -> **PATH**.
 
 3. **Verify**: You can now run `orchard` from any directory.
    ```bash
@@ -168,4 +179,4 @@ composer install
 ---
 
 ## License
-MIT License. Created by the Orchard Contributors.
+MIT License. Created by William Asaba
