@@ -16,7 +16,9 @@ Whether you manage a handful of sites or a massive fleet of Laravel applications
 *   **Outdated Reporting** — Aggregate `composer outdated` results from every project into a single, scanable report.
 *   **Git Guard** — Built-in safety enforcement. Orchard **refuses** to update any project with uncommitted git changes, ensuring you never lose local work.
 *   **Auto-Branching** — Automatically create dated Git branches (e.g., `chore/orchard-update-2026-02-19`) before running updates, following best-practice deployment workflows.
+*   **Interactive Wizard** — Select exactly which projects to update using a multi-select prompt.
 *   **Parallel Processing** — High-speed concurrent updates powered by Symfony Process, with smart CPU-aware throttling.
+*   **Self-Update** — Keep Orchard current with a single command (`orchard self-update`).
 *   **CI/CD Ready** — Every command supports a `--json` flag for easy integration with automation scripts and monitoring dashboards.
 
 ---
@@ -115,11 +117,17 @@ The core of Orchard. Safely run `composer update` across your fleet.
 # Update all clean projects in parallel
 orchard update --parallel=4
 
+# 🧙 Interactive Mode: Pick projects from a list
+orchard update --interactive
+
 # The "Safety First" Workflow: Dry run + Auto-branch
 orchard update --auto-branch --dry-run
+```
 
-# Full Automation with specific branch prefix
-orchard update --auto-branch --branch-prefix=security-fix --parallel=2
+### 5. Self-Update (`self-update`)
+If you are running the PHAR version, you can update Orchard itself to the latest release:
+```bash
+orchard self-update
 ```
 
 ---
