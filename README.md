@@ -1,3 +1,6 @@
+[![Tests](https://github.com/Williamug/orchard/actions/workflows/test.yml/badge.svg)](https://github.com/Williamug/orchard/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 # 🍃 Orchard
 
 **Orchard** is a lightweight, high-performance PHP CLI tool designed for safe, centralized bulk dependency maintenance across multiple Laravel projects.
