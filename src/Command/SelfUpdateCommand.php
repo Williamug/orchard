@@ -64,7 +64,11 @@ class SelfUpdateCommand extends Command
         }
 
         $io->text('Downloading update...');
-        $localPath = \Phar::running(false);
+        $localPath = realpath(\Phar::running(false));
+        if (!$localPath) {
+            $io->error('Could not resolve the path to the current PHAR.');
+            return Command::FAILURE;
+        }
         $tmpPath   = $localPath . '.tmp';
 
         try {
@@ -94,6 +98,7 @@ class SelfUpdateCommand extends Command
         $opts = [
             'http' => [
                 'method' => 'GET',
+                'ignore_errors' => true,
                 'header' => [
                     'User-Agent: ' . self::USER_AGENT,
                     'Accept: application/vnd.github.v3+json',
@@ -102,7 +107,21 @@ class SelfUpdateCommand extends Command
         ];
 
         $context = stream_context_create($opts);
-        $content = @file_get_contents(self::GITHUB_API_URL, false, $context);
+        $content = file_get_contents(self::GITHUB_API_URL, false, $context);
+
+        // Check for HTTP status code in response headers
+        if (isset($http_response_header)) {
+            preg_match('{HTTP\/\S+\s+(\d+)}', $http_response_header[0], $matches);
+            $status = (int) $matches[1];
+
+            if ($status === 404) {
+                throw new \RuntimeException('No public releases found for this repository. Please ensure you have created at least one release on GitHub.');
+            }
+
+            if ($status !== 200) {
+                throw new \RuntimeException("GitHub API returned HTTP status {$status}");
+            }
+        }
 
         if ($content === false) {
             $error = error_get_last();
@@ -110,8 +129,8 @@ class SelfUpdateCommand extends Command
         }
 
         $data = json_decode($content, true);
-        if (!is_array($data)) {
-            throw new \RuntimeException('Invalid JSON response from GitHub API');
+        if (!is_array($data) || !isset($data['tag_name'])) {
+            throw new \RuntimeException('Invalid JSON response from GitHub API. The repository may not have any releases.');
         }
 
         return $data;
