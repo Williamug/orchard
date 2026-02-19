@@ -21,6 +21,15 @@ Whether you manage a handful of sites or a massive fleet of Laravel applications
 
 ---
 
+## Requirements
+
+- **PHP 8.2+**
+- **Composer** (available in your PATH)
+- **Git** (available in your PATH)
+- **OS**: Linux, macOS, or Windows
+
+---
+
 ## Installation
 
 ### From Source
@@ -32,15 +41,27 @@ chmod +x bin/orchard
 ```
 
 ### Build as PHAR (Recommended for Global Use)
-Building Orchard as a PHAR makes it portable and easy to use globally.
-```bash
-# Build the PHAR
-php vendor/bin/box compile
+Building Orchard as a PHAR (PHP Archive) makes it a single portable executable that you can run from anywhere on your system.
 
-# Move to your global bin
-mv dist/orchard.phar /usr/local/bin/orchard
-chmod +x /usr/local/bin/orchard
-```
+1. **Compile the PHAR**: Run the build script defined in `composer.json` (which uses `humbug/box`).
+   ```bash
+   php vendor/bin/box compile
+   ```
+   *This generates `dist/orchard.phar`.*
+
+2. **Make it Global**: Move the generated file to a directory in your system's PATH and make it executable.
+   ```bash
+   # Move to global bin
+   sudo mv dist/orchard.phar /usr/local/bin/orchard
+
+   # Ensure it is executable
+   sudo chmod +x /usr/local/bin/orchard
+   ```
+
+3. **Verify**: You can now run `orchard` from any directory.
+   ```bash
+   orchard --version
+   ```
 
 ---
 
@@ -53,7 +74,7 @@ Use `scan` to verify which projects Orchard detects in a given directory.
 orchard scan
 
 # Scan a specific path recursively
-orchard scan --path=/var/www --recursive
+orchard scan --path=path/to/your/projects --recursive
 
 # Output results as JSON
 orchard scan --json
@@ -65,7 +86,7 @@ The `status` command provides a bird's-eye view of your project versions and Git
 orchard status
 
 # Check a specific path
-orchard status -p /sites
+orchard status -p path/to/your/projects
 ```
 
 ### 3. Checking for Updates (`outdated`)
@@ -74,7 +95,7 @@ Running `outdated` aggregates all direct dependency updates available across you
 orchard outdated
 
 # Great for checking specialized project clusters
-orchard outdated --path=~/sites/client-a --exclude=legacy-cms
+orchard outdated --path=path/to/your/projects --exclude=legacy-cms
 ```
 
 ### 4. Bulk Maintenance (`update`)
@@ -98,7 +119,7 @@ Set persistent defaults by creating a `~/.orchard.json` file. This is ideal for 
 
 ```json
 {
-  "base_path": "/home/user/sites",
+  "base_path": "path/to/your/projects",
   "parallel": 4,
   "recursive": true,
   "exclude": ["abandoned-project", "experimental-v3"],
